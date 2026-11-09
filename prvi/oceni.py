@@ -61,9 +61,10 @@ def oceni(seq):
 
     return min(10.0, round(t, 2)), min(10.0, round(s, 2)), min(10.0, round(e, 2))
 
-# --- CLEAN TESTING EXAMPLES ---
-# Exact match works cleanly
-print("Pure Delta Profile:", oceni("TEIYQAGSTPCNGVEGFNCYFPLQSYGFQPTN"))
+if __name__ == "__main__":
+    # --- CLEAN TESTING EXAMPLES ---
+    # Exact match works cleanly
+    print("Pure Delta Profile:", oceni("TEIYQAGSTPCNGVEGFNCYFPLQSYGFQPTN"))
 
-# Chaotic broken sequence naturally drops to zero via the viability decay multiplier
-print("Biologically Broken (RWRW...):", oceni("RWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRW"))
+    # Chaotic broken sequence naturally drops to zero via the viability decay multiplier
+    print("Biologically Broken (RWRW...):", oceni("RWRWRWRWRWRWRWRWRWRWRWRWRWRWRWRW"))
