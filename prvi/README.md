@@ -1,6 +1,6 @@
 # Optimizacija sekvenci
 
-Implementirane su jednonitna, višenitna i višeprocesna Pareto pretraga sa razmjenom kandidata. Konačna mjerenja i poređenja su u [IZVJESTAJ.md](IZVJESTAJ.md), a svih 18 rezultata u [results/final_2026-11-15](results/final_2026-11-15).
+Implementirane su jednonitna, višenitna i višeprocesna Pareto pretraga sa razmjenom kandidata. Konačna mjerenja i poređenja su u [IZVJESTAJ.md](IZVJESTAJ.md), a svih 18 rezultata u [results/final](results/final).
 
 ## Okruženje i instalacija
 
@@ -25,7 +25,7 @@ Za P2 dodati `--threads 4`. Za P3 dodati `--processes 4 --threads 1 --migration-
 Tačna komanda kompletne konačne serije P1–P6:
 
 ```powershell
-python run_experiments.py --budget 40000 --population-size 50 --batch-size 25 --max-initial-mutations 3 --mutation-lambda 2 --process-lambdas 0.5 1.5 2.5 3.5 --seeds 7183 29461 85607 --threads 4 --migration-count 5 --exchange-interval 5 --alternative-exchange-interval 1 --second-topology all-to-all --timeout 300 --output-dir results/final_2026-11-15
+python run_experiments.py --budget 40000 --population-size 50 --batch-size 25 --max-initial-mutations 3 --mutation-lambda 2 --process-lambdas 0.5 1.5 2.5 3.5 --seeds 7183 29461 85607 --threads 4 --migration-count 5 --exchange-interval 5 --alternative-exchange-interval 1 --second-topology all-to-all --timeout 300 --output-dir results/final
 ```
 
 Postojeći izlaz istog imena se prepisuje; za novo mjerenje koristiti drugi `--output-dir`. `python main.py --help` prikazuje argumente. `run_experiments.py` pokreće eksperimente redom i pravi JSON, čitljive Markdown arhive, logove, `runs.json` i zbirnu tabelu.
