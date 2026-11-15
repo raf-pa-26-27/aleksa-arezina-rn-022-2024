@@ -1,0 +1,5 @@
+{
+  "logical_cores": 20,
+  "processor": "13th Gen Intel(R) Core(TM) i7-13650HX",
+  "physical_cores": 14
+}

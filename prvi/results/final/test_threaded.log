@@ -1,0 +1,14 @@
+test_duplicate_limit_during_initialization (__main__.ThreadedTests.test_duplicate_limit_during_initialization) ... ok
+test_finished_worker_takes_another_candidate_without_barrier (__main__.ThreadedTests.test_finished_worker_takes_another_candidate_without_barrier) ... ok
+test_no_duplicate_evaluations_in_small_space (__main__.ThreadedTests.test_no_duplicate_evaluations_in_small_space) ... ok
+test_parallel_ranks_match_sequential_with_ties (__main__.ThreadedTests.test_parallel_ranks_match_sequential_with_ties) ... ok
+test_partial_iteration_waits_and_updates_on_main_thread (__main__.ThreadedTests.test_partial_iteration_waits_and_updates_on_main_thread) ... ok
+test_reservations_respect_batch_and_remaining_budget (__main__.ThreadedTests.test_reservations_respect_batch_and_remaining_budget) ... ok
+test_small_budget_and_validation (__main__.ThreadedTests.test_small_budget_and_validation) ... ok
+test_thread_counts_match_sequential_result (__main__.ThreadedTests.test_thread_counts_match_sequential_result) ... ok
+test_worker_exception_propagates_after_pending_work_finishes (__main__.ThreadedTests.test_worker_exception_propagates_after_pending_work_finishes) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.128s
+
+OK

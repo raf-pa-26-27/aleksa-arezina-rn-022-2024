@@ -1,0 +1,14 @@
+All dominance checks passed.
+All ranking checks passed.
+All crowding distance checks passed.
+All population update checks passed.
+Extra population update check passed.
+All mutation checks passed.
+All crossover checks passed.
+All offspring checks passed.
+All initialization checks passed.
+All sequential search checks passed.
+Extra sequential check passed.
+Validation check passed.
+All metric checks passed.
+All sequential checks passed.

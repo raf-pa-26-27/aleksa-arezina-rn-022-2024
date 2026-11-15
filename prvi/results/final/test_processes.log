@@ -1,0 +1,19 @@
+test_abrupt_process_exit_without_report (__main__.ProcessTests.test_abrupt_process_exit_without_report) ... ok
+test_all_topologies_real_processes (__main__.ProcessTests.test_all_topologies_real_processes) ... ok
+test_budget_partition_and_processes_with_threads (__main__.ProcessTests.test_budget_partition_and_processes_with_threads) ... ok
+test_caught_process_error_does_not_block_results (__main__.ProcessTests.test_caught_process_error_does_not_block_results) ... ok
+test_finished_receiver_does_not_block_remaining_processes (__main__.ProcessTests.test_finished_receiver_does_not_block_remaining_processes) ... ok
+test_imports_do_not_count_toward_M_or_change_parents_mid_iteration (__main__.ProcessTests.test_imports_do_not_count_toward_M_or_change_parents_mid_iteration) ... ok
+test_independent_repeatable_seed_streams (__main__.ProcessTests.test_independent_repeatable_seed_streams) ... ok
+test_invalid_parameters_fail_before_spawning (__main__.ProcessTests.test_invalid_parameters_fail_before_spawning) ... ok
+test_merge_removes_duplicates_and_dominated_candidates (__main__.ProcessTests.test_merge_removes_duplicates_and_dominated_candidates) ... ok
+test_migrant_selection_and_exchange_interval (__main__.ProcessTests.test_migrant_selection_and_exchange_interval) ... ok
+test_neighbors (__main__.ProcessTests.test_neighbors) ... ok
+test_receipt_does_not_prevent_duplicate_termination (__main__.ProcessTests.test_receipt_does_not_prevent_duplicate_termination) ... ok
+test_receive_known_dominated_and_nondominated (__main__.ProcessTests.test_receive_known_dominated_and_nondominated) ... ok
+test_timeout_is_bounded (__main__.ProcessTests.test_timeout_is_bounded) ... ok
+
+----------------------------------------------------------------------
+Ran 14 tests in 5.820s
+
+OK

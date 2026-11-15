@@ -1,0 +1,12 @@
+Stop reason: budget_exhausted
+Evaluations: 40000 (started: 40000)
+Archive size: 5
+Total time: 2.5184 seconds
+Local iterations: 1592
+Average local iteration time: 0.004813 seconds
+Hypervolume: 0.568525
+Process 0: evals=10000, sent=282, received=259, accepted=16, stop=budget_exhausted
+Process 1: evals=10000, sent=254, received=242, accepted=15, stop=budget_exhausted
+Process 2: evals=10000, sent=276, received=254, accepted=15, stop=budget_exhausted
+Process 3: evals=10000, sent=259, received=216, accepted=16, stop=budget_exhausted
+Results saved to: C:\Users\aleks\Documents\Codex\2026-11-04\import-math-import-json-blosum62-json-5\outputs\final_submission\prvi\results\final_2026-11-15\P3_seed7183.json

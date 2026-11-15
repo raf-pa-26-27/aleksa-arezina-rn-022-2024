@@ -1,6 +1,9 @@
 import numpy as np
 import math
 from time import perf_counter
+from concurrent.futures import ThreadPoolExecutor
+from collections.abc import Callable
+from threading import Event, Lock
 from model import Candidate, SearchResult, SearchStats
 from oceni import oceni
 from pareto import update_population_and_archive, non_dominated_sort
@@ -105,11 +108,13 @@ def initialize_search(
     budget: int,
     rng: np.random.Generator,
     stats: SearchStats | None = None,
+    ranking_pool: ThreadPoolExecutor | None = None,
+    process_id: int = 0,
 ) -> tuple[list[Candidate], list[Candidate], dict[str, Candidate], bool]:   
     if stats is None:
         stats = SearchStats()
     records: dict[str, Candidate] = {}
-    initial_candidate = Candidate(initial_sequence)
+    initial_candidate = Candidate(initial_sequence, origin_process=process_id)
     records[initial_sequence] = initial_candidate
     stats.evaluations_started += 1
     initial_candidate.scores = tuple(oceni(initial_sequence))
@@ -124,7 +129,7 @@ def initialize_search(
             failed_attempts += 1
             continue
         failed_attempts = 0
-        new_candidate = Candidate(new_sequence)
+        new_candidate = Candidate(new_sequence, origin_process=process_id)
         records[new_sequence] = new_candidate
         stats.evaluations_started += 1
         new_candidate.scores = tuple(oceni(new_sequence))
@@ -135,6 +140,7 @@ def initialize_search(
         archive=[],
         new_candidates=list(records.values()),
         population_size=population_size,
+        ranking_pool=ranking_pool,
     )
 
     stopped_by_duplicates = failed_attempts >= 100
@@ -206,4 +212,165 @@ def run_sequential(
         iteration_seconds=iteration_seconds,
         stats=stats,
     )
-        
+
+
+def collect_candidates_threaded(
+    population: list[Candidate],
+    records: dict[str, Candidate],
+    stats: SearchStats,
+    batch_size: int,
+    budget: int,
+    mutation_lambda: float,
+    rng: np.random.Generator,
+    failed_attempts: int,
+    pool: ThreadPoolExecutor,
+    thread_count: int,
+    process_id: int = 0,
+) -> tuple[list[Candidate], int]:
+    new_candidates: list[Candidate] = []
+    lock = Lock()
+    abort = Event()
+
+    def worker():
+        nonlocal failed_attempts
+
+        try:
+            while True:
+                with lock:
+                    if (
+                        abort.is_set()
+                        or len(new_candidates) >= batch_size
+                        or stats.evaluations_started >= budget
+                        or failed_attempts >= 100
+                    ):
+                        return
+
+                    sequence = generate_offspring(population, mutation_lambda, rng)
+
+                    if sequence in records:
+                        failed_attempts += 1
+                        continue
+
+                    failed_attempts = 0
+                    candidate = Candidate(sequence, origin_process=process_id)
+                    records[sequence] = candidate
+                    new_candidates.append(candidate)
+                    stats.evaluations_started += 1
+
+                scores = tuple(oceni(sequence))
+
+                with lock:
+                    candidate.scores = scores
+                    stats.evaluations_completed += 1
+        except BaseException:
+            abort.set()
+            raise
+
+    futures = [pool.submit(worker) for _ in range(thread_count)]
+    first_error = None
+
+    for future in futures:
+        try:
+            future.result()
+        except BaseException as error:
+            if first_error is None:
+                first_error = error
+
+    if first_error is not None:
+        raise first_error
+
+    return new_candidates, failed_attempts
+
+
+def run_threaded(
+    initial_sequence: str,
+    population_size: int,
+    max_initial_mutations: int,
+    batch_size: int,
+    mutation_lambda: float,
+    budget: int,
+    rng: np.random.Generator,
+    thread_count: int,
+    *,
+    process_id: int = 0,
+    receive_hook: Callable[[dict[str, Candidate], SearchStats], list[Candidate]] | None = None,
+    send_hook: Callable[[list[Candidate], int, SearchStats], None] | None = None,
+) -> SearchResult:
+    initial_sequence = initial_sequence.upper().strip()
+    validate_parameters(
+        initial_sequence,
+        population_size,
+        max_initial_mutations,
+        batch_size,
+        mutation_lambda,
+        budget,
+    )
+
+    if type(thread_count) is not int or thread_count < 1:
+        raise ValueError("thread_count must be a positive integer")
+
+    stats = SearchStats()
+    iteration_seconds: list[float] = []
+
+    with (
+        ThreadPoolExecutor(
+            max_workers=thread_count, thread_name_prefix="evaluate"
+        ) as evaluation_pool,
+        ThreadPoolExecutor(
+            max_workers=thread_count, thread_name_prefix="rank"
+        ) as ranking_pool,
+    ):
+        population, archive, records, stopped = initialize_search(
+            initial_sequence,
+            population_size,
+            max_initial_mutations,
+            budget,
+            rng,
+            stats=stats,
+            ranking_pool=ranking_pool,
+            process_id=process_id,
+        )
+
+        if stopped:
+            return SearchResult(
+                archive, records, "duplicate_limit", iteration_seconds, stats
+            )
+
+        failed_attempts = 0
+        iteration_number = 0
+
+        while stats.evaluations_started < budget and failed_attempts < 100:
+            iteration_start = perf_counter()
+            received_candidates = (
+                receive_hook(records, stats) if receive_hook is not None else []
+            )
+            new_candidates, failed_attempts = collect_candidates_threaded(
+                population,
+                records,
+                stats,
+                batch_size,
+                budget,
+                mutation_lambda,
+                rng,
+                failed_attempts,
+                evaluation_pool,
+                thread_count,
+                process_id=process_id,
+            )
+
+            population, archive = update_population_and_archive(
+                population,
+                archive,
+                received_candidates + new_candidates,
+                population_size,
+                ranking_pool=ranking_pool,
+            )
+            iteration_number += 1
+            if send_hook is not None:
+                send_hook(archive, iteration_number, stats)
+            iteration_seconds.append(perf_counter() - iteration_start)
+
+    stop_reason = (
+        "duplicate_limit" if failed_attempts >= 100 else "budget_exhausted"
+    )
+    return SearchResult(archive, records, stop_reason, iteration_seconds, stats)

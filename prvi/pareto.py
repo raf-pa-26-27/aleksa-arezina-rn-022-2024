@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor
+
 from model import Candidate
 
 
@@ -45,6 +47,36 @@ def dominates(a, b):
 
     return is_better
 
+
+def non_dominated_sort_parallel(
+    candidates: list[Candidate],
+    pool: ThreadPoolExecutor,
+) -> list[list[Candidate]]:
+    remaining = candidates.copy()
+    fronts = []
+    rank = 1
+
+    while remaining:
+        snapshot = tuple(remaining)
+
+        def is_non_dominated(candidate):
+            for other in snapshot:
+                if other is candidate:
+                    continue
+                if dominates(other.scores, candidate.scores):
+                    return False
+            return True
+
+        flags = list(pool.map(is_non_dominated, snapshot))
+        front = [candidate for candidate, keep in zip(snapshot, flags) if keep]
+        for candidate in front:
+            candidate.rank = rank
+            remaining.remove(candidate)
+        fronts.append(front)
+        rank += 1
+
+    return fronts
+
 def calculate_crowding_distance(front: list[Candidate]) -> None:
     for candidate in front:
         candidate.crowding_distance = 0.0
@@ -73,6 +105,7 @@ def update_population_and_archive(
     archive: list[Candidate],
     new_candidates: list[Candidate],
     population_size: int,
+    ranking_pool: ThreadPoolExecutor | None = None,
 ) -> tuple[list[Candidate], list[Candidate]]:
     
     unique_candidates: dict[str, Candidate] = {}
@@ -81,7 +114,10 @@ def update_population_and_archive(
         unique_candidates[candidate.sequence] = candidate
     combined = list(unique_candidates.values())
 
-    fronts = non_dominated_sort(combined)
+    if ranking_pool is None:
+        fronts = non_dominated_sort(combined)
+    else:
+        fronts = non_dominated_sort_parallel(combined, ranking_pool)
     for front in fronts:
         calculate_crowding_distance(front)
     new_archive = fronts[0] if fronts else []
